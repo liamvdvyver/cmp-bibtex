@@ -49,13 +49,12 @@ function source:complete(params, callback)
   local file_keys = {}
 
   for _, v in ipairs(files) do
-    file_keys[v] = true
+    file_keys[vim.fn.expand(v)] = true
   end
 
   for file, _ in pairs(file_keys) do
     if not util.file_exists(file) then goto continue end
 
-    -- TODO: Expand ~/$HOME
     io.input(file)
     local contents = io.read("*a")
 
