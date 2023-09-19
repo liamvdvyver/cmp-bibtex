@@ -34,4 +34,18 @@ function M.file_exists(file)
   end
 end
 
+function M.should_complete(context)
+  local line = vim.api.nvim_buf_get_text(
+    context.bufnr,
+    context.cursor.row - 1, 0,
+    context.cursor.row - 1, context.cursor.character,
+    {}
+  )[1]
+  L = line
+  if string.match(line, "@$") or string.match(line, "\\cite%a?{$") then
+    return true
+  end
+  return false
+end
+
 return M

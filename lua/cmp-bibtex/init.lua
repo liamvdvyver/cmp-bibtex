@@ -42,6 +42,8 @@ function source:complete(params, callback)
   local isIncomplete = false
   local context = params.context
 
+  if not util.should_complete(context) then return end
+
   local parsed_entries = {}
 
   local files = vim.tbl_flatten({ source.opts.files, util.get_bibresources(context) })
