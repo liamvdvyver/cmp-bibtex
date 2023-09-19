@@ -11,7 +11,6 @@ function M.get_bibresources(context)
 
     for _, line in ipairs(lines) do
       -- TODO: Support multiple per line
-      -- TODO: Support relative paths
       -- TODO: Support other methods of adding bib resources
       -- TODO: Exclude commented out lines
       local matches = line:gmatch("\\addbibresource%b{}")

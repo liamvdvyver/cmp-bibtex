@@ -49,7 +49,12 @@ function source:complete(params, callback)
   local file_keys = {}
 
   for _, v in ipairs(files) do
-    file_keys[vim.fn.expand(v)] = true
+    local filename = vim.fn.expand(v)
+    if not string.match(filename, "^/") then
+      -- TODO: get actual filename from request context
+      filename = vim.fn.expand("%:p:h") .. "/" .. filename
+    end
+    file_keys[filename] = true
   end
 
   for file, _ in pairs(file_keys) do
