@@ -2,6 +2,7 @@ local source = {}
 
 -- Set defaults
 source.opts = {
+  files = {},
   filetypes = { "markdown", "tex" },
 }
 
@@ -15,11 +16,11 @@ source.new = function()
 end
 
 function source:is_available()
-    for _, v in ipairs(source.opts.filetypes) do
-        if vim.bo.filetype == v then
-            return true
-        end
+  for _, v in ipairs(source.opts.filetypes) do
+    if vim.bo.filetype == v then
+      return true
     end
+  end
   return false
 end
 
@@ -40,13 +41,54 @@ function source.get_field(entry, field)
   return (string.match(entry, field .. "%s*=%s*%b{}") or "NA"):gsub(field .. "%s*=%s*", ""):gsub("[{}]", "")
 end
 
-function source:complete(_, callback)
+function source.get_bibresources(context)
+  local ret = {}
+  if context.filetype == "tex" then
+    local lines = vim.api.nvim_buf_get_lines(context.bufnr, 0, -1, false)
+
+    for _, line in ipairs(lines) do
+      -- TODO: Support multiple per line
+      -- TODO: Support relative paths
+      -- TODO: Support other methods of adding bib resources
+      -- TODO: Exclude commented out lines
+      local matches = line:gmatch("\\addbibresource%b{}")
+
+      for match in matches do
+        local bib_file = match:gsub("(\\addbibresource{)(.*)(}%s*)", "%2")
+        table.insert(ret, bib_file)
+      end
+    end
+  end
+  return ret
+end
+
+function source.file_exists(file)
+  local f = io.open(file, "r")
+  if f ~= nil then
+    io.close(f)
+    return true
+  else
+    return false
+  end
+end
+
+function source:complete(params, callback)
   local isIncomplete = false
+  local context = params.context
 
   local parsed_entries = {}
 
-  for _, file in ipairs(source.opts.files) do
-    -- TODO: Check file exists
+  local files = vim.tbl_flatten({ source.opts.files, source.get_bibresources(context) })
+
+  local file_keys = {}
+
+  for _, v in ipairs(files) do
+    file_keys[v] = true
+  end
+
+  for file, _ in pairs(file_keys) do
+    if not source.file_exists(file) then goto continue end
+
     -- TODO: Expand ~/$HOME
     io.input(file)
     local contents = io.read("*a")
@@ -71,6 +113,7 @@ function source:complete(_, callback)
         if key then table.insert(parsed_entries, completion_item) end
       end
     end
+    ::continue::
   end
 
   callback({
