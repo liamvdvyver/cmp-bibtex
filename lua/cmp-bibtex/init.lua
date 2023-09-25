@@ -39,7 +39,13 @@ function source:get_trigger_characters()
 end
 
 function source:complete(params, callback)
-  local isIncomplete = false
+  if source.cache then
+    callback({
+      items = source.cache,
+      isIncomplete = true
+    })
+  end
+
   local context = params.context
 
   if not util.should_complete(context) then return end
@@ -90,8 +96,10 @@ function source:complete(params, callback)
 
   callback({
     items = parsed_entries,
-    isIncomplete = isIncomplete
+    isIncomplete = false
   })
+
+  source.cache = parsed_entries
 end
 
 function source:resolve(completion_item, callback)
