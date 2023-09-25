@@ -69,4 +69,44 @@ function M.vals_to_keys(list)
   return ret
 end
 
+function M.flatten_once(tab)
+  local ret = {}
+  for _, vi in pairs(tab) do
+    for _, vj in pairs(vi) do
+      table.insert(ret, vj)
+    end
+  end
+  return ret
+end
+
+function M.completion_items(file)
+  local ret = {}
+
+  io.input(file)
+  local contents = io.read("*a")
+
+  if contents then
+    local entries = contents:gmatch("@%w*%s*%b{}")
+
+    for entry in entries do
+      local key             = entry:match("@%w*%s*{%c?%w*,?"):gsub("@%w*%s*{%c?", ""):gsub(",?", "")
+      local author          = M.get_field(entry, "author")
+      local year            = M.get_field(entry, "year")
+      local title           = M.get_field(entry, "title")
+
+      local completion_item = {
+        label = key,
+        documentation = {
+          kind = "markdown",
+          value = "# " .. title .. "\n\n" .. author .. " (" .. year .. ")"
+        }
+      }
+
+      if key then table.insert(ret, completion_item) end
+    end
+  end
+
+  return ret
+end
+
 return M

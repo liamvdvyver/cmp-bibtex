@@ -53,32 +53,11 @@ function source:complete(params, callback)
 
   for file, _ in pairs(file_keys) do
     if not util.file_exists(file) then goto continue end
-
-    io.input(file)
-    local contents = io.read("*a")
-
-    if contents then
-      local entries = contents:gmatch("@%w*%s*%b{}")
-
-      for entry in entries do
-        local key             = entry:match("@%w*%s*{%c?%w*,?"):gsub("@%w*%s*{%c?", ""):gsub(",?", "")
-        local author          = util.get_field(entry, "author")
-        local year            = util.get_field(entry, "year")
-        local title           = util.get_field(entry, "title")
-
-        local completion_item = {
-          label = key,
-          documentation = {
-            kind = "markdown",
-            value = "# " .. title .. "\n\n" .. author .. " (" .. year .. ")"
-          }
-        }
-
-        if key then table.insert(parsed_entries, completion_item) end
-      end
-    end
+    table.insert(parsed_entries, util.completion_items(file))
     ::continue::
   end
+
+  parsed_entries = util.flatten_once(parsed_entries)
 
   callback({
     items = parsed_entries,
