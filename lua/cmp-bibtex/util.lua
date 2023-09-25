@@ -48,4 +48,25 @@ function M.should_complete(context)
   return false
 end
 
+function M.clean_filenames(files)
+  local ret = {}
+  for _, v in ipairs(files) do
+    local filename = vim.fn.expand(v)
+    if not string.match(filename, "^/") then
+      -- TODO: get actual filename from request context
+      filename = vim.fn.expand("%:p:h") .. "/" .. filename
+    end
+    table.insert(ret, filename)
+  end
+  return ret
+end
+
+function M.vals_to_keys(list)
+  local ret = {}
+  for _, v in ipairs(list) do
+    ret[v] = true
+  end
+  return ret
+end
+
 return M

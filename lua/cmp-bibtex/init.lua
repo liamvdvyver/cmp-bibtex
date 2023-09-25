@@ -29,10 +29,6 @@ function source:get_debug_name()
   return 'bibtex'
 end
 
--- function source:get_keyword_pattern()
---   return '@'
--- end
-
 -- TODO: Check context before "{"
 function source:get_trigger_characters()
   return { "@", "{" }
@@ -52,18 +48,8 @@ function source:complete(params, callback)
 
   local parsed_entries = {}
 
-  local files = vim.tbl_flatten({ source.opts.files, util.get_bibresources(context) })
-
-  local file_keys = {}
-
-  for _, v in ipairs(files) do
-    local filename = vim.fn.expand(v)
-    if not string.match(filename, "^/") then
-      -- TODO: get actual filename from request context
-      filename = vim.fn.expand("%:p:h") .. "/" .. filename
-    end
-    file_keys[filename] = true
-  end
+  local files = util.clean_filenames(vim.tbl_flatten({ source.opts.files, util.get_bibresources(context) }))
+  local file_keys = util.vals_to_keys(files)
 
   for file, _ in pairs(file_keys) do
     if not util.file_exists(file) then goto continue end
