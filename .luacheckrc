@@ -1,2 +1,4 @@
-globals = { "vim" }
-ignore = { "212" }
+return {
+  globals = { "vim" },
+  ignore = { "212" },
+}

@@ -1,4 +1,4 @@
-M = {}
+local M = {}
 
 function M.get_field(entry, field)
   return (string.match(entry, field .. "%s*=%s*%b{}") or "NA"):gsub(field .. "%s*=%s*", ""):gsub("[{}]", "")
@@ -41,7 +41,6 @@ function M.should_complete(context)
     context.cursor.row - 1, context.cursor.character,
     {}
   )[1]
-  L = line
   if string.match(line, "@$") or string.match(line, "\\cite%a?{$") then
     return true
   end
