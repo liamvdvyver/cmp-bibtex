@@ -52,7 +52,7 @@ function source:complete(params, callback)
   local file_keys = util.vals_to_keys(files)
 
   for file, _ in pairs(file_keys) do
-    if not util.file_exists(file) then goto continue end
+    if not util.file_exists(vim.fs.normalize(file)) then goto continue end
     table.insert(parsed_entries, util.completion_items(file))
     ::continue::
   end
