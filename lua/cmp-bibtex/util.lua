@@ -178,16 +178,22 @@ function M.completion_items(file)
   local contents = io.read("*a")
 
   if contents then
+    -- Match individual BibTeX entries
     local entries = contents:gmatch("@%w*%s*%b{}")
 
     for entry in entries do
+      -- Extract the key and type
       local key = entry:match("@%w*%s*{%s*(%w+),?")
+      local entry_type = entry:match("@(%w+)") or "unknown"
+
+      -- Extract other fields
       local author = latex_to_utf8(M.get_field(entry, "author"))
       local year = M.get_field(entry, "year")
       local title = latex_to_utf8(M.get_field(entry, "title"))
       local pages = latex_to_utf8(M.get_field(entry, "pages"))
       local journal = latex_to_utf8(M.get_field(entry, "journaltitle") or M.get_field(entry, "journal"))
 
+      -- Format documentation in APA-like style with type
       local apa_preview = "**" .. (author or "Unknown Author") .. ".** "
       if year and year ~= "NA" then
         apa_preview = apa_preview .. "(" .. year .. "). "
@@ -196,9 +202,11 @@ function M.completion_items(file)
         apa_preview = apa_preview .. "*" .. title .. ".* "
       end
       if journal and journal ~= "NA" then
-        apa_preview = apa_preview .. journal .. "."
+        apa_preview = apa_preview .. journal .. ". "
       end
+      apa_preview = apa_preview .. "\n\n{" .. entry_type .. "}" -- Add type in braces
 
+      -- Create the completion item
       if key then
         table.insert(ret, {
           label = key,
