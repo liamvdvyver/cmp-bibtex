@@ -37,8 +37,10 @@ end
 function M.should_complete(context)
   local line = vim.api.nvim_buf_get_text(
     context.bufnr,
-    context.cursor.row - 1, 0,
-    context.cursor.row - 1, context.cursor.character,
+    context.cursor.row - 1,
+    0,
+    context.cursor.row - 1,
+    context.cursor.character,
     {}
   )[1]
   if string.match(line, "@$") or string.match(line, "\\cite%a?{$") then
@@ -88,20 +90,53 @@ function M.completion_items(file)
     local entries = contents:gmatch("@%w*%s*%b{}")
 
     for entry in entries do
-      local key             = entry:match("@%w*%s*{%c?%w*,?"):gsub("@%w*%s*{%c?", ""):gsub(",?", "")
-      local author          = M.get_field(entry, "author")
-      local year            = M.get_field(entry, "year")
-      local title           = M.get_field(entry, "title")
+      local key = entry:match("@%w*%s*{%c?%w*,?"):gsub("@%w*%s*{%c?", ""):gsub(",?", "")
+      local author = M.get_field(entry, "author")
+      local year = M.get_field(entry, "year")
+      local title = M.get_field(entry, "title")
+      local journal = M.get_field(entry, "journaltitle") or M.get_field(entry, "journal")
+      local volume = M.get_field(entry, "volume")
+      local number = M.get_field(entry, "number")
+      local pages = M.get_field(entry, "pages")
+      local publisher = M.get_field(entry, "publisher")
+      local entry_type = entry:match("@%w*"):sub(2):lower() -- Ex: article, book
+
+      -- Format APA-stil preview
+      local apa_preview = "**" .. (author or "Unknown Author") .. ".** "
+      if year and year ~= "NA" then
+        apa_preview = apa_preview .. "(" .. year .. "). "
+      end
+      if title and title ~= "NA" then
+        apa_preview = apa_preview .. "*" .. title .. ".* "
+      end
+
+      if entry_type == "article" and journal and journal ~= "NA" then
+        apa_preview = apa_preview .. journal
+        if volume and volume ~= "NA" then
+          apa_preview = apa_preview .. ", *" .. volume .. "*"
+        end
+        if number and number ~= "NA" then
+          apa_preview = apa_preview .. "(" .. number .. ")"
+        end
+        if pages and pages ~= "NA" then
+          apa_preview = apa_preview .. ", " .. pages
+        end
+        apa_preview = apa_preview .. "."
+      elseif publisher and publisher ~= "NA" then
+        apa_preview = apa_preview .. publisher .. "."
+      end
 
       local completion_item = {
         label = key,
         documentation = {
           kind = "markdown",
-          value = "# " .. title .. "\n\n" .. author .. " (" .. year .. ")"
-        }
+          value = apa_preview,
+        },
       }
 
-      if key then table.insert(ret, completion_item) end
+      if key then
+        table.insert(ret, completion_item)
+      end
     end
   end
 
