@@ -62,7 +62,47 @@ function M.should_complete(context)
     context.cursor.character,
     {}
   )[1]
-  return string.match(line, "@$") or string.match(line, "\\cite%a?{$") or false
+
+  -- If the line ends with '@', trigger completion (as before)
+  if line:match("@$") then
+    return true
+  end
+
+  -- List of all commands we want matched
+  local citation_commands = {
+    "cite",
+    "footcite",
+    "footcites",
+    "parencite",
+    "parencites",
+    "textcite",
+    "textcites",
+    "autocite",
+    "autocites",
+    "smartcite",
+    "smartcites",
+    "supercite",
+    "citeyear",
+    "citeauthor",
+    "citetitle",
+    -- Custom
+    "citefirstlastauthor",
+    "citejournal",
+    "citefirstlastauthoryear",
+  }
+
+  -- Test each command. The pattern:
+  -- \\command - matches the command
+  -- %a? - optional letter after the command (e.g., cites)
+  -- .- - minimal match of arbitrary characters to reach the {
+  -- { - requires that a { exists after the command and any optional arguments
+  for _, cmd in ipairs(citation_commands) do
+    if line:match("\\" .. cmd .. "%a?.-{") then
+      return true
+    end
+  end
+
+  return false
 end
 
 -- Clean relative file paths for BibTeX files
