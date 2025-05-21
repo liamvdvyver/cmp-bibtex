@@ -223,7 +223,7 @@ function M.completion_items(file)
 
     for entry in entries do
       -- Extract the key and type
-      local key = entry:match("@%w*%s*{%s*(%w+),?")
+      local key = entry:match("@%w*%s*{%s*([%w%-_]+),?")
       local entry_type = entry:match("@(%w+)") or "unknown"
 
       -- Extract other fields
